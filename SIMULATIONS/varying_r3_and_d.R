@@ -175,7 +175,7 @@ ggplot(df, aes(x = r3, y = value, color = method)) +
   ) +
   labs(
     x = expression(r[3]),
-    y = "Average Misclassification Error Rate"
+    y = "Misclustering Error Rate"
   ) +
   ylim(0, 0.8) +
   theme_minimal() 
@@ -266,7 +266,7 @@ ggplot(df_all, aes(x = r3, y = mean, color = method, fill = method)) +
   ) +
   labs(
     x = expression(r[3]),
-    y = "Average Misclassification Error Rate"
+    y = "Misclustering Error Rate"
   ) + 
   ylim(0, 1) +
   theme_minimal() +
@@ -440,7 +440,7 @@ ggplot(df, aes(x = d, y = value, color = method)) +
   ) +
   labs(
     x = expression(d[cov]),
-    y = "Average Misclassification Error Rate"
+    y = "Misclustering Error Rate"
   ) +
   ylim(0, 1) +
   theme_minimal() 
@@ -502,7 +502,7 @@ ggplot(df1, aes(x = d, y = mean, color = method, fill = method)) +
   
   labs(
     x = expression(d[cov]),
-    y = "Average Misclassification Error Rate"
+    y = "Misclustering Error Rate"
   ) +
   
   ylim(0, 1) +
