@@ -551,8 +551,8 @@ get_wdi_colnames <- function(indicators) {
 
 ## ================= ONE-TIME SETUP (run once) ------------------------
 ## because when the function is run in parallel it hits WDI-API multiple times, so timeout happens
-## hence we load the whole(all ind+all years) wdi data once then subset inside the function according to the 
-##  indicators given =================
+##  indicators given 
+##  =================
 years <- 1990:2000
 
 wdi_ind_list <- c(
