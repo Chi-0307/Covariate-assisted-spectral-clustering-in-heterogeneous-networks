@@ -753,3 +753,731 @@ legend(
 par(mfrow = c(1,1))
 
 plan(sequential)
+
+#################################################################################
+### Now we plot     1) vary r3 fixed d for n=250,500  for HET-COV
+###                 2) vary d  fixed r3 for n=250,500 for HET-COV
+#################################################################################
+#################### vary r3 - faster code ######################################
+
+library(future)
+library(future.apply)
+
+## parallel plan (Windows-safe)
+future::plan(future::multisession, workers = future::availableCores() - 1)
+
+## parameters
+r3_vals <- seq(0, 0.7, 0.05)
+nsim <- 50
+
+######## regime: n= 250 ################
+##########################################
+# type-1
+n_hetcov_d_0.1_n_250_t1 <- matrix(NA, length(r3_vals), nsim)
+n_hetcov_d_0.5_n_250_t1 <- matrix(NA, length(r3_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_d_0.1_n_250_varyr3_t1 <- numeric(length(r3_vals))
+misclassification_rate_hetcov_d_0.5_n_250_varyr3_t1 <- numeric(length(r3_vals))
+
+# type-2
+n_hetcov_d_0.1_n_250_t2 <- matrix(NA, length(r3_vals), nsim)
+n_hetcov_d_0.5_n_250_t2 <- matrix(NA, length(r3_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_d_0.1_n_250_varyr3_t2 <- numeric(length(r3_vals))
+misclassification_rate_hetcov_d_0.5_n_250_varyr3_t2 <- numeric(length(r3_vals))
+
+
+######### regime: n= 500 ##############
+###########################################
+# type-1
+n_hetcov_d_0.1_n_500_t1 <- matrix(NA, length(r3_vals), nsim)
+n_hetcov_d_0.5_n_500_t1 <- matrix(NA, length(r3_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_d_0.1_n_500_varyr3_t1 <- numeric(length(r3_vals))
+misclassification_rate_hetcov_d_0.5_n_500_varyr3_t1 <- numeric(length(r3_vals))
+
+# type-2
+n_hetcov_d_0.1_n_500_t2 <- matrix(NA, length(r3_vals), nsim)
+n_hetcov_d_0.5_n_500_t2 <- matrix(NA, length(r3_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_d_0.1_n_500_varyr3_t2 <- numeric(length(r3_vals))
+misclassification_rate_hetcov_d_0.5_n_500_varyr3_t2 <- numeric(length(r3_vals))
+
+
+## reproducibility
+set.seed(1234)
+
+## main loop
+for (i in seq_along(r3_vals)) {
+  r3 <- r3_vals[i]
+  res <- future.apply::future_lapply(
+    1:nsim,
+    function(sim) {
+      #set.seed(123)
+      list(  
+        #### n = 250 ###
+        hetcov_d_0.1_n_250 = het_cov_sbm(
+          d = 0.1, r = 0.01, r3 = r3,
+          n = 250, K = 3, T = 2, R = 3
+        ),
+        
+        hetcov_d_0.5_n_250 = het_cov_sbm(
+          d = 0.5, r = 0.01, r3 = r3,
+          n = 250, K = 3, T = 2, R = 3
+        ),
+        
+        #### n = 500 ###
+        hetcov_d_0.1_n_500 = het_cov_sbm(
+          d = 0.1, r = 0.01, r3 = r3,
+          n = 500, K = 3, T = 2, R = 3
+        ),
+        
+        hetcov_d_0.5_n_500 = het_cov_sbm(
+          d = 0.5, r = 0.01, r3 = r3,
+          n = 500, K = 3, T = 2, R = 3
+        )
+        
+      )
+    },
+    future.seed = TRUE
+  )
+  
+  ## extract
+  ### n = 250 #####
+  n = 250
+  n_hetcov_d_0.1_n_250_t1[i, ] <- sapply(res, function(x) x$hetcov_d_0.1_n_250[[1]])
+  n_hetcov_d_0.1_n_250_t2[i, ] <- sapply(res, function(x) x$hetcov_d_0.1_n_250[[2]])
+  # miscl
+  misclassification_rate_hetcov_d_0.1_n_250_varyr3_t1[i] <- mean(n_hetcov_d_0.1_n_250_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_d_0.1_n_250_varyr3_t2[i] <- mean(n_hetcov_d_0.1_n_250_t2[i, ]) / (n / 2)
+  
+  n_hetcov_d_0.5_n_250_t1[i, ] <- sapply(res, function(x) x$hetcov_d_0.5_n_250[[1]])
+  n_hetcov_d_0.5_n_250_t2[i, ] <- sapply(res, function(x) x$hetcov_d_0.5_n_250[[2]])
+  # miscl
+  misclassification_rate_hetcov_d_0.5_n_250_varyr3_t1[i] <- mean(n_hetcov_d_0.5_n_250_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_d_0.5_n_250_varyr3_t2[i] <- mean(n_hetcov_d_0.5_n_250_t2[i, ]) / (n / 2)
+  
+  ### n = 500 ####
+  n = 500
+  n_hetcov_d_0.1_n_500_t1[i, ] <- sapply(res, function(x) x$hetcov_d_0.1_n_500[[1]])
+  n_hetcov_d_0.1_n_500_t2[i, ] <- sapply(res, function(x) x$hetcov_d_0.1_n_500[[2]])
+  # miscl
+  misclassification_rate_hetcov_d_0.1_n_500_varyr3_t1[i] <- mean(n_hetcov_d_0.1_n_500_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_d_0.1_n_500_varyr3_t2[i] <- mean(n_hetcov_d_0.1_n_500_t2[i, ]) / (n / 2)
+  
+  n_hetcov_d_0.5_n_500_t1[i, ] <- sapply(res, function(x) x$hetcov_d_0.5_n_500[[1]])
+  n_hetcov_d_0.5_n_500_t2[i, ] <- sapply(res, function(x) x$hetcov_d_0.5_n_500[[2]])
+  # miscl
+  misclassification_rate_hetcov_d_0.5_n_500_varyr3_t1[i] <- mean(n_hetcov_d_0.5_n_500_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_d_0.5_n_500_varyr3_t2[i] <- mean(n_hetcov_d_0.5_n_500_t2[i, ]) / (n / 2)
+  
+}
+
+## shutdown
+future::plan(sequential)
+
+par(mfrow = c(1,2))
+############# n = 250 #############################
+#### type-1 #######
+plot(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.1_n_250_varyr3_t1,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,0.8),
+  xlab = expression(r[3]),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.5_n_250_varyr3_t1,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c("d = 0.1", "d = 0.5"),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+title("Type-1", cex.main = 0.9, font.main = 1)
+
+##### type-2 ######
+plot(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.1_n_250_varyr3_t2,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,0.8),
+  xlab = expression(r[3]),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.5_n_250_varyr3_t2,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c("d = 0.1", "d = 0.5"),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+title("Type-2", cex.main = 0.9, font.main = 1)
+#####################################################################################
+
+par(mfrow = c(1,2))
+################ n = 500 #############################
+#### type-1 #######
+plot(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.1_n_500_varyr3_t1,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,1),
+  xlab = expression(r[3]),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.5_n_500_varyr3_t1,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c("d = 0.1", "d = 0.5"),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+title("Type-1", cex.main = 0.9, font.main = 1)
+
+##### type-2 ######
+plot(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.1_n_500_varyr3_t2,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,1),
+  xlab = expression(r[3]),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  r3_vals,
+  misclassification_rate_hetcov_d_0.5_n_500_varyr3_t2,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c("d = 0.1", "d = 0.5"),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+title("Type-2", cex.main = 0.9, font.main = 1)
+
+######################### vary d - FASTER CODE ##############################################################
+
+
+## parameters
+d_vals <- seq(0, 0.8, 0.05)
+nsim <- 50
+
+
+######## regime: n= 250 ################
+##########################################
+# type-1
+n_hetcov_r3_0.1_n_250_t1 <- matrix(NA, length(d_vals), nsim)
+n_hetcov_r3_0.3_n_250_t1 <- matrix(NA, length(d_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_r3_0.1_n_250_varyd_t1 <- numeric(length(d_vals))
+misclassification_rate_hetcov_r3_0.3_n_250_varyd_t1 <- numeric(length(d_vals))
+
+# type-2
+n_hetcov_r3_0.1_n_250_t2 <- matrix(NA, length(d_vals), nsim)
+n_hetcov_r3_0.3_n_250_t2 <- matrix(NA, length(d_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_r3_0.1_n_250_varyd_t2 <- numeric(length(d_vals))
+misclassification_rate_hetcov_r3_0.3_n_250_varyd_t2 <- numeric(length(d_vals))
+
+
+######### regime: n= 500 ##############
+###########################################
+# type-1
+n_hetcov_r3_0.1_n_500_t1 <- matrix(NA, length(d_vals), nsim)
+n_hetcov_r3_0.3_n_500_t1 <- matrix(NA, length(d_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_r3_0.1_n_500_varyd_t1 <- numeric(length(d_vals))
+misclassification_rate_hetcov_r3_0.3_n_500_varyd_t1 <- numeric(length(d_vals))
+
+# type-2
+n_hetcov_r3_0.1_n_500_t2 <- matrix(NA, length(d_vals), nsim)
+n_hetcov_r3_0.3_n_500_t2 <- matrix(NA, length(d_vals), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_r3_0.1_n_500_varyd_t2 <- numeric(length(d_vals))
+misclassification_rate_hetcov_r3_0.3_n_500_varyd_t2 <- numeric(length(d_vals))
+
+
+## reproducibility
+set.seed(1234)
+
+## main loop
+for (i in seq_along(d_vals)) {
+  d <- d_vals[i]
+  res <- future.apply::future_lapply(
+    1:nsim,
+    function(sim) {
+      #set.seed(123)
+      list(  
+        #### n = 250 ###
+        hetcov_r3_0.1_n_250 = het_cov_sbm(
+          d = d, r = 0.01, r3 = 0.1,
+          n = 250, K = 3, T = 2, R = 3
+        ),
+        
+        hetcov_r3_0.3_n_250 = het_cov_sbm(
+          d = d, r = 0.01, r3 = 0.3,
+          n = 250, K = 3, T = 2, R = 3
+        ),
+        
+        #### n = 500 ###
+        hetcov_r3_0.1_n_500 = het_cov_sbm(
+          d = d, r = 0.01, r3 = 0.1,
+          n = 500, K = 3, T = 2, R = 3
+        ),
+        
+        hetcov_r3_0.3_n_500 = het_cov_sbm(
+          d = d, r = 0.01, r3 = 0.3,
+          n = 500, K = 3, T = 2, R = 3
+        )
+        
+      )
+    },
+    future.seed = TRUE
+  )
+  
+  ## extract
+  ### n = 250 #####
+  n = 250
+  n_hetcov_r3_0.1_n_250_t1[i, ] <- sapply(res, function(x) x$hetcov_r3_0.1_n_250[[1]])
+  n_hetcov_r3_0.1_n_250_t2[i, ] <- sapply(res, function(x) x$hetcov_r3_0.1_n_250[[2]])
+  # miscl
+  misclassification_rate_hetcov_r3_0.1_n_250_varyd_t1[i] <- mean(n_hetcov_r3_0.1_n_250_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_r3_0.1_n_250_varyd_t2[i] <- mean(n_hetcov_r3_0.1_n_250_t2[i, ]) / (n / 2)
+  
+  n_hetcov_r3_0.3_n_250_t1[i, ] <- sapply(res, function(x) x$hetcov_r3_0.3_n_250[[1]])
+  n_hetcov_r3_0.3_n_250_t2[i, ] <- sapply(res, function(x) x$hetcov_r3_0.3_n_250[[2]])
+  # miscl
+  misclassification_rate_hetcov_r3_0.3_n_250_varyd_t1[i] <-  mean(n_hetcov_r3_0.3_n_250_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_r3_0.3_n_250_varyd_t2[i] <-  mean(n_hetcov_r3_0.3_n_250_t2[i, ]) / (n / 2)
+  
+  ### n = 500 ####
+  n = 500
+  n_hetcov_r3_0.1_n_500_t1[i, ] <- sapply(res, function(x) x$hetcov_r3_0.1_n_500[[1]])
+  n_hetcov_r3_0.1_n_500_t2[i, ] <- sapply(res, function(x) x$hetcov_r3_0.1_n_500[[2]])
+  # miscl
+  misclassification_rate_hetcov_r3_0.1_n_500_varyd_t1[i] <- mean(n_hetcov_r3_0.1_n_500_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_r3_0.1_n_500_varyd_t2[i] <- mean(n_hetcov_r3_0.1_n_500_t2[i, ]) / (n / 2)
+  
+  n_hetcov_r3_0.3_n_500_t1[i, ] <- sapply(res, function(x) x$hetcov_r3_0.3_n_500[[1]])
+  n_hetcov_r3_0.3_n_500_t2[i, ] <- sapply(res, function(x) x$hetcov_r3_0.3_n_500[[2]])
+  # miscl
+  misclassification_rate_hetcov_r3_0.3_n_500_varyd_t1[i] <- mean(n_hetcov_r3_0.3_n_500_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_r3_0.3_n_500_varyd_t2[i] <- mean(n_hetcov_r3_0.3_n_500_t2[i, ]) / (n / 2)
+  
+}
+
+## shutdown
+future::plan(sequential)
+
+############# n = 250 #############################
+par(mfrow = c(1,2))
+#### type-1 #######
+plot(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.1_n_250_varyd_t1,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,1),
+  xlab = expression(d),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.3_n_250_varyd_t1,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c(
+    expression(r[3] == 0.1),
+    expression(r[3] == 0.3)
+  ),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+
+title("Type-1", cex.main = 0.9, font.main = 1)
+
+##### type-2 ######
+plot(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.1_n_250_varyd_t2,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,1),
+  xlab = expression(d),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.3_n_250_varyd_t2,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c(
+    expression(r[3] == 0.1),
+    expression(r[3] == 0.3)
+  ),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+
+title("Type-2", cex.main = 0.9, font.main = 1)
+#####################################################################################
+
+################ n = 500 #############################
+par(mfrow = c(1,2))
+#### type-1 #######
+plot(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.1_n_500_varyd_t1,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,1),
+  xlab = expression(d),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.3_n_500_varyd_t1,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c(
+    expression(r[3] == 0.1),
+    expression(r[3] == 0.3)
+  ),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+
+title("Type-1", cex.main = 0.9, font.main = 1)
+
+##### type-2 ######
+plot(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.1_n_500_varyd_t2,
+  type = "l",
+  col = "black",
+  lwd = 2,
+  ylim = c(0,1),
+  xlab = expression(d),
+  ylab = "Average Misclustering Error Rate",
+  bg = "grey95",
+  cex.lab = 0.7
+)
+
+lines(
+  d_vals,
+  misclassification_rate_hetcov_r3_0.3_n_500_varyd_t2,
+  col = "red",
+  lwd = 2
+)
+
+grid(col = "grey80", lwd = 2)
+
+legend(
+  "topright",
+  legend = c(
+    expression(r[3] == 0.1),
+    expression(r[3] == 0.3)
+  ),
+  col = c("black", "red"),
+  lwd = 2,
+  bty = "o",
+  bg = "grey90",
+  cex = 0.6
+)
+
+title("Type-2", cex.main = 0.9, font.main = 1)
+
+
+################################ vary both d,r3 - faster code ###################################
+
+r3_vals = seq(0,0.55,0.05)
+d_vals  = seq(0,0.55,0.05)
+nsim <- 50
+
+## not taking the cartesian product to create the tuples##
+## rather we increase in the following way (small_d,small_r3)---->(big_d,big_r3)
+## we don't consider (small_d, big_r3) or (big_d,small_r3) type values
+tuples <- sapply(1:length(d_vals), function(i) c(d_vals[i], r3_vals[i]), simplify = FALSE)
+# Compute 5 equispaced tick indices
+tick_indices <- round(seq(1, length(d_vals), length.out = 10))
+
+# Extract the corresponding (d, r3) pairs
+ticks <- tuples[tick_indices]
+
+
+## parallel plan
+future::plan(future::multisession, workers = 2)
+
+
+##########################################
+# type-1
+n_hetcov_n_250_varyboth_t1 <- matrix(NA, length(ticks), nsim)
+n_hetcov_n_500_varyboth_t1 <- matrix(NA, length(ticks), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_n_250_varyboth_t1 <- numeric(length(ticks))
+misclassification_rate_hetcov_n_500_varyboth_t1 <- numeric(length(ticks))
+
+# type-2
+n_hetcov_n_250_varyboth_t2 <- matrix(NA, length(ticks), nsim)
+n_hetcov_n_500_varyboth_t2 <- matrix(NA, length(ticks), nsim)
+
+## misclassification rate
+misclassification_rate_hetcov_n_250_varyboth_t2 <- numeric(length(ticks))
+misclassification_rate_hetcov_n_500_varyboth_t2 <- numeric(length(ticks))
+
+## reproducibility
+set.seed(1234)
+
+## main loop
+for (i in seq_along(ticks)) {
+  d <- ticks[[i]][1]
+  r3 <- ticks[[i]][2]
+  res <- future.apply::future_lapply(
+    1:nsim,
+    function(sim) {
+      #set.seed(123)
+      list(  
+        #### n = 250 ###
+        hetcov_n_250 = het_cov_sbm(
+          d = d, r = 0.01, r3 = r3,
+          n = 250, K = 3, T = 2, R = 3
+        ),
+        
+        #### n = 500 ###
+        hetcov_n_500 = het_cov_sbm(
+          d = d, r = 0.01, r3 = r3,
+          n = 500, K = 3, T = 2, R = 3
+        )
+        
+      )
+    },
+    future.seed = TRUE
+  )
+  
+  ## extract
+  ### n = 250 #####
+  n = 250
+  n_hetcov_n_250_varyboth_t1[i, ] <- sapply(res, function(x) x$hetcov_n_250[[1]])
+  n_hetcov_n_250_varyboth_t2[i, ] <- sapply(res, function(x) x$hetcov_n_250[[2]])
+  # miscl
+  misclassification_rate_hetcov_n_250_varyboth_t1[i] <- mean(n_hetcov_n_250_varyboth_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_n_250_varyboth_t2[i] <- mean(n_hetcov_n_250_varyboth_t2[i, ]) / (n / 2)
+  
+  ### n = 500 ####
+  n = 500
+  n_hetcov_n_500_varyboth_t1[i, ] <- sapply(res, function(x) x$hetcov_n_500[[1]])
+  n_hetcov_n_500_varyboth_t2[i, ] <- sapply(res, function(x) x$hetcov_n_500[[2]])
+  # miscl
+  misclassification_rate_hetcov_n_500_varyboth_t1[i] <- mean(n_hetcov_n_500_varyboth_t1[i, ]) / (n / 2)
+  misclassification_rate_hetcov_n_500_varyboth_t2[i] <- mean(n_hetcov_n_500_varyboth_t2[i, ]) / (n / 2)
+  
+}
+
+## shutdown
+future::plan(sequential)
+
+
+################################ plots ###################################
+
+library(ggplot2)
+
+###### type 1 ############
+
+df_plot <- data.frame(
+  x = seq_along(ticks),
+  rate = c(
+    misclassification_rate_hetcov_n_250_varyboth_t1,
+    misclassification_rate_hetcov_n_500_varyboth_t1
+  ),
+  n = factor(
+    rep(c("n = 250", "n = 500"), each = length(ticks)),
+    levels = c("n = 250", "n = 500")
+  ),
+  label = rep(
+    sapply(ticks, function(t) paste0("(", t[1], ", ", t[2], ")")),
+    times = 2
+  )
+)
+
+ggplot(df_plot, aes(x = x, y = rate, color = n, group = n)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.5) +
+  scale_color_manual(values = c("black", "firebrick")) +
+  scale_x_continuous(
+    breaks = seq_along(ticks),
+    labels = unique(df_plot$label)
+  ) +
+  labs(
+    title = "Type 1",
+    x = expression(paste("(", d, ", ", r[3], ")")),
+    y = "Average Misclassification Error Rate",
+    color = NULL
+  ) +
+  theme_gray(base_size = 11) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title  = element_text(hjust = 0.5, face = "bold", size = 11),
+    legend.position = "top"
+  )
+
+
+###############################################################################
+
+######### type 2 ###################
+
+df_plot <- data.frame(
+  x = seq_along(ticks),
+  rate = c(
+    misclassification_rate_hetcov_n_250_varyboth_t2,
+    misclassification_rate_hetcov_n_500_varyboth_t2
+  ),
+  n = factor(
+    rep(c("n = 250", "n = 500"), each = length(ticks)),
+    levels = c("n = 250", "n = 500")
+  ),
+  label = rep(
+    sapply(ticks, function(t) paste0("(", t[1], ", ", t[2], ")")),
+    times = 2
+  )
+)
+
+ggplot(df_plot, aes(x = x, y = rate, color = n, group = n)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.5) +
+  scale_color_manual(values = c("black", "firebrick")) +
+  scale_x_continuous(
+    breaks = seq_along(ticks),
+    labels = unique(df_plot$label)
+  ) +
+  labs(
+    title = "Type 2",
+    x = expression(paste("(", d, ", ", r[3], ")")),
+    y = "Average Misclassification Error Rate",
+    color = NULL
+  ) +
+  theme_gray(base_size = 11) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title  = element_text(hjust = 0.5, face = "bold", size = 11),
+    legend.position = "top"
+  )
+
+
+              
