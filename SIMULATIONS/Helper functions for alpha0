@@ -1,5 +1,5 @@
 
-######### Helper functions ####
+###### Helper functions ####
 
 ###=== Descriptions of the code =======###
 # 1. Contains functions to be used inside hetcov, homcov, het and hom clustering.
