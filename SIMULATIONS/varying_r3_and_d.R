@@ -10,7 +10,7 @@ library(future)
 library(future.apply)
 ###############################################################################
 #source("Helper functions.R")
-source("Helper functions for alpha0.R")
+source("Helper functions for alpha0.R") ## here optimal alpha is chosen to be alpha_0
 
 ################################################################################
 #################### vary r3 - faster code #####################################
